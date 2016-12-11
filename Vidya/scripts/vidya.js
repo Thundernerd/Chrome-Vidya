@@ -110,6 +110,10 @@ function getVideoPoster() {
     if (url.includes("youtube.com/")) {
         var p = getUrlParameter("v");
         return "https://i1.ytimg.com/vi/{0}/mqdefault.jpg".replace("{0}", p);
+    } else if (url.includes("youtube.googleapis.com/") || window.location.href.includes("youtube.googleapis.com/")) {
+        var element = $(".ytp-thumbnail-overlay-image");
+        var src = element.css("background-image").replace('url("',"").replace('")', "");
+        return src;
     } else {
         return $(video).attr("poster");
     }
