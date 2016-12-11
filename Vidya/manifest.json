@@ -11,14 +11,13 @@
         "default_popup": "popup.html"
     },
 
-    "content_scripts": [{
-        "matches": ["*://*/*"],
-        "js": ["scripts/jquery.min.js", "scripts/main.js"]
-    }],
+    "content_scripts": [
+        { "matches": ["<all_urls>"], "js": ["scripts/jquery.min.js", "scripts/main.js"] }
+    ],
 
     "permissions": [
         "tabs",
         "storage",
-        "*://*/*"
+        "<all_urls>"
     ]
 }
