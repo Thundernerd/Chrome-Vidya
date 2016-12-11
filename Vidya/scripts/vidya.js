@@ -11,7 +11,7 @@ $(document).ready(function() {
 var key_progress = "vidya_progress";
 var key_data = "vidya_data";
 
-var delays = [1000,2000,4000,8000];
+var delays = [1000,1000,2000,2000,4000,4000,8000];
 var delayIndex = 0;
 
 var search;
