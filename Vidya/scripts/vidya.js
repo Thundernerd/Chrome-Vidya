@@ -55,6 +55,7 @@ function findVideo() {
             url = data.response;
             startTrackingVideo();
             getVideoProgress();
+            hookKeyboard();
         });
     }
 }
@@ -156,4 +157,81 @@ function setCurrentTime(time) {
     } else {
         video.currentTime = time;
     }
+}
+
+function hookKeyboard() {
+    document.addEventListener("keydown", onKeyDown);
+}
+
+function onKeyDown(evt) {
+    if (evt.defaultPrevented) {
+        return;
+    }
+
+    if ($(document.activeElement).is("input"))
+        return;
+
+    if (evt.ctrlKey)
+        return;
+
+    switch (evt.keyCode) {
+        case 48:
+        case 49:
+        case 50:
+        case 51:
+        case 52:
+        case 53:
+        case 54:
+        case 55:
+        case 56:
+        case 57:
+            scrubPercentage((evt.keyCode-48)/10);
+            evt.preventDefault();
+            break;
+        case 74:
+            scrubStep(-10);
+            evt.preventDefault();
+            break;
+        case 75:
+            togglePause();
+            evt.preventDefault();
+            break;
+        case 76:
+            scrubStep(10);
+            evt.preventDefault();
+            break;
+        case 77:
+            toggleMute();
+            evt.preventDefault();
+            break;
+        case 80:
+            togglePause();
+            evt.preventDefault();
+            break;
+    }
+}
+
+function scrubPercentage(p) {
+    var c = video.duration * p;
+
+    if (isNaN(c))
+        return;
+
+    video.currentTime = c;
+}
+
+function scrubStep(s) {
+    video.currentTime += s;
+}
+
+function togglePause() {
+    if (video.paused) {
+        video.play();
+    } else {
+        video.pause();
+    }
+}
+
+function toggleMute() {
+    video.muted = !video.muted;
 }
