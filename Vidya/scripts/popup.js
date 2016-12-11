@@ -3,12 +3,12 @@ $(function() {
 });
 
 function onGetAllItems(items) {
-    var values = Object.values(items);
-    for (var i = 0; i < values.length; i++) {
-        var val = values[i];
-        if (val instanceof Object) {
-            console.log(val);
-            createPopup(i, val);
+    var keys = Object.keys(items);
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (k.startsWith("vidya_data_")) {
+            var value = items[k];
+            createPopup(i,value);
         }
     }
 }
