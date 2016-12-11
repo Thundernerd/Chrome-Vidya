@@ -2,10 +2,14 @@
     "manifest_version": 2,
     "name": "Vidya",
     "short_name": "Vidya",
-    "version": "1.0",
+    "version": "1.1",
 
     "description": "YouTube-like controls for HTML5 video elements. Also saves the current time of the video.",
-    
+
+    "browser_action": {
+        "default_title": "Vidya",
+        "default_popup": "popup.html"
+    },
 
     "content_scripts": [{
         "matches": ["*://*/*"],

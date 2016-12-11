@@ -1,6 +1,8 @@
 var delays = [1000,2000,4000,8000];
 var delayIndex = 0;
 
+var winLoc;
+
 var id;
 var video;
 
@@ -11,6 +13,8 @@ var lastStamp;
 getVideoElement();
 
 function getVideoElement() {
+    winLoc = window.location.href;
+
     lastStamp = new Date();
     var videos = $("video");
 
@@ -23,7 +27,7 @@ function getVideoElement() {
         delayIndex++;
         setTimeout(getVideoElement, nDelay);
     } else {
-        id = "vidya_" + window.location.href;
+        id = "vidya_" + winLoc;
 
         video = videos[0];
         video.ontimeupdate = onTimeUpdate;
@@ -31,7 +35,54 @@ function getVideoElement() {
         chrome.storage.local.get(id, onGetFromStorage);
         document.addEventListener("keydown", onKeyDown);
         $(window).scroll(onScroll);
+
+        saveVideoData();
     }
+}
+
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+
+function getVideoPoster() {
+    if (window.location.href.includes("youtube.com/")) {
+        var p = getUrlParameter("v");
+        return "https://i1.ytimg.com/vi/{0}/mqdefault.jpg".replace("{0}", p);
+    } else {
+        return $(video).attr("poster");
+    }
+}
+
+function saveVideoData() {
+    var i = setInterval(function() {
+        if (video.readyState > 0){
+            clearInterval(i);
+
+            var dId = "data_" + winLoc;
+            var data = {};
+            data[dId] = {
+                id: winLoc,
+                "title": document.title,
+                "poster": getVideoPoster(),
+                "duration": video.duration,
+            };
+
+            chrome.storage.local.set(data);
+        } else {
+            console.log("Video not ready");
+        }
+    }, 200);
 }
 
 function onGetFromStorage(data) {
@@ -68,6 +119,7 @@ function onTimeUpdate() {
     } else {
         video.removeEventListener("timeupdate", onTimeUpdate);
         chrome.storage.local.remove(id);
+        chrome.storage.local.remove("data_"+winLoc);
     }
 }
 
