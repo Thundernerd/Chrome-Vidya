@@ -77,15 +77,15 @@ function createPopup(i, data) {
 
     btn.click(function() {
         var id = data.id;
-        var dId = "data_"+id;
-        var vId = "vidya_"+id;
-
-        console.log(data);
+        var dId = "vidya_data_"+id;
+        var vId = "vidya_progress_"+id;
 
         chrome.storage.local.remove(dId);
         chrome.storage.local.remove(vId);
 
-        item.remove();
+        item.stop().slideUp(200, function() {
+            item.remove();
+        })
 
         return false;
     });

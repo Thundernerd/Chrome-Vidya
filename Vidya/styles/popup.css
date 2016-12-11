@@ -6,6 +6,7 @@
 
 body {
     width: 350px;
+    height: 480px;
     cursor: default;
 }
 
@@ -19,6 +20,7 @@ body {
 }
 
 #items {
+    height: 100%;
     overflow-x: hidden;
     background-color: #EEE;
     padding-right: 10px;
