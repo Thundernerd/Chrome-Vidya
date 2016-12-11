@@ -1,4 +1,3 @@
-
 $(document).ready(function() {
     chrome.runtime.sendMessage({type:"isBlacklist"}, function(data) {
         console.log(data);
@@ -109,7 +108,6 @@ function getUrlParameter(sParam) {
 function getVideoPoster() {
     if (url.includes("youtube.com/")) {
         var p = getUrlParameter("v");
-        console.log(p);
         return "https://i1.ytimg.com/vi/{0}/mqdefault.jpg".replace("{0}", p);
     } else {
         return $(video).attr("poster");
@@ -125,10 +123,7 @@ function setPopupData(video) {
         poster: getVideoPoster(),
     };
 
-    console.log(data);
-
     chrome.storage.local.set(data);
-
     popupDataSet = true;
 }
 
