@@ -6,13 +6,20 @@
 
     "description": "YouTube-like controls for HTML5 video elements. Also saves the current time of the video.",
 
+    "background": {
+        "scripts": [
+            "scripts/background.js"
+        ]
+    },
+
     "browser_action": {
         "default_title": "Vidya",
         "default_popup": "popup.html"
     },
 
     "content_scripts": [
-        { "matches": ["<all_urls>"], "js": ["scripts/jquery.min.js", "scripts/main.js"] }
+        { "matches": ["<all_urls>"], "js": ["scripts/jquery.min.js", "scripts/mainframe.js"] },
+        { "matches": ["<all_urls>"], "js": ["scripts/jquery.min.js", "scripts/vidya.js"], "all_frames": true}
     ],
 
     "permissions": [

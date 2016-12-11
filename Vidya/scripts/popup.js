@@ -35,8 +35,8 @@ function createPopup(i, data) {
     item.append(info);
     item.append(overlay);
 
-    var vId = "vidya_"+data.id;
-    chrome.storage.local.get("vidya_"+data.id, function(vData) {
+    var vId = "vidya_progress_"+data.id;
+    chrome.storage.local.get("vidya_progress_"+data.id, function(vData) {
         var i = parseInt(vData[vId]);
         if (!isNaN(i)) {
             duration.css("width", ((i/data.duration)*100)+"%");
