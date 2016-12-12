@@ -1,6 +1,86 @@
+var domain;
+var blacklistKeyboard = false;
+var blacklistTracking = false;
+
+var keyKeyboard;
+var keyTracking;
+
 $(function() {
     chrome.storage.local.get(null,onGetAllItems);
+
+    $("#keyboard").click(function() {
+        $("#keyboard_black").stop().fadeToggle(100);
+        blacklistKeyboard = !blacklistKeyboard;
+        var data = {};
+        data[keyKeyboard] = blacklistKeyboard;
+        chrome.storage.local.set(data);
+    });
+
+    $("#tracking").click(function() {
+        $("#tracking_black").stop().fadeToggle(100);
+        blacklistTracking = !blacklistTracking;
+        var data = {};
+        data[keyTracking] = blacklistTracking;
+        chrome.storage.local.set(data);
+    });
+
+    chrome.tabs.query({active:true,currentWindow:true}, function(data) {
+        if (data.length == 0) {
+            // No tabs?
+            return;
+        }
+
+        var url = data[0].url;
+        domain = extractDomain(url);
+
+        if (domain.startsWith("www.")) {
+            domain = domain.substring(4);
+        }
+
+        keyKeyboard = "bl_k_" + domain;
+        keyTracking = "bl_t_" + domain;
+
+        console.log(keyKeyboard);
+
+        chrome.storage.local.get(keyKeyboard, onGetBlacklistKeyboard);
+        chrome.storage.local.get(keyTracking, onGetBlacklistTracking);
+    });
 });
+
+function onGetBlacklistKeyboard(data) {
+    var value = data[keyKeyboard];
+    if (value === undefined) {
+        return;
+    }
+    blacklistKeyboard = value;
+    if (blacklistKeyboard){
+        $("#keyboard_black").stop().fadeIn(100);
+    }
+}
+
+function onGetBlacklistTracking(data) {
+    var value = data[keyTracking];
+    if (value === undefined) {
+        return;
+    }
+    blacklistTracking = value;
+    if (blacklistTracking) {
+        $("#tracking_black").stop().fadeIn(100);
+    }
+}
+
+function extractDomain(url) {
+    var domain;
+
+    if (url.indexOf("://") > -1) {
+        domain = url.split('/')[2];
+    } else {
+        domain = url.split('/')[0];
+    }
+
+    domain = domain.split(':')[0];
+    return domain;
+}
 
 function onGetAllItems(items) {
     var keys = Object.keys(items);
