@@ -1,6 +1,6 @@
 var domain;
-var blacklistKeyboard = false;
-var blacklistTracking = false;
+var useHook = false;
+var useTrack = true;
 
 var keyKeyboard;
 var keyTracking;
@@ -10,17 +10,17 @@ $(function() {
 
     $("#keyboard").click(function() {
         $("#keyboard_black").stop().fadeToggle(100);
-        blacklistKeyboard = !blacklistKeyboard;
+        useHook = !useHook;
         var data = {};
-        data[keyKeyboard] = blacklistKeyboard;
+        data[keyKeyboard] = useHook;
         chrome.storage.local.set(data);
     });
 
     $("#tracking").click(function() {
         $("#tracking_black").stop().fadeToggle(100);
-        blacklistTracking = !blacklistTracking;
+        useTrack = !useTrack;
         var data = {};
-        data[keyTracking] = blacklistTracking;
+        data[keyTracking] = useTrack;
         chrome.storage.local.set(data);
     });
 
@@ -40,8 +40,6 @@ $(function() {
         keyKeyboard = "bl_k_" + domain;
         keyTracking = "bl_t_" + domain;
 
-        console.log(keyKeyboard);
-
         chrome.storage.local.get(keyKeyboard, onGetBlacklistKeyboard);
         chrome.storage.local.get(keyTracking, onGetBlacklistTracking);
     });
@@ -52,9 +50,9 @@ function onGetBlacklistKeyboard(data) {
     if (value === undefined) {
         return;
     }
-    blacklistKeyboard = value;
-    if (blacklistKeyboard){
-        $("#keyboard_black").stop().fadeIn(100);
+    useHook = value;
+    if (useHook){
+        $("#keyboard_black").stop().fadeIn(0);
     }
 }
 
@@ -63,9 +61,9 @@ function onGetBlacklistTracking(data) {
     if (value === undefined) {
         return;
     }
-    blacklistTracking = value;
-    if (blacklistTracking) {
-        $("#tracking_black").stop().fadeIn(100);
+    useTrack = value;
+    if (!useTrack) {
+        $("#tracking_black").stop().fadeOut(0);
     }
 }
 

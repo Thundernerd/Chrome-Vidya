@@ -16,13 +16,33 @@ var delayIndex = 0;
 
 var search;
 var url;
+var domain;
 var title;
 var video;
+
+var keyHook;
+var keyTrack;
+
+var useHook = false;
+var useTrack = true;
 
 var popupDataSet = false;
 
 function getKey(key) {
     return key+"_"+url;
+}
+
+function extractDomain(url) {
+    var domain;
+
+    if (url.indexOf("://") > -1) {
+        domain = url.split('/')[2];
+    } else {
+        domain = url.split('/')[0];
+    }
+
+    domain = domain.split(':')[0];
+    return domain;
 }
 
 function findVideo() {
@@ -53,11 +73,33 @@ function findVideo() {
         chrome.runtime.sendMessage({type:"getUrl"}, function (data) {
             console.log(data);
             url = data.response;
+
+            domain = extractDomain(url);
+            if (domain.startsWith("www.")) {
+                domain = domain.substring(4);
+            }
+            keyHook = "bl_k_"+domain;
+            keyTrack = "bl_t_"+domain;
+            chrome.storage.local.get(keyHook, onGetBlacklistKeyboard);
+            chrome.storage.local.get(keyTrack, onGetBlacklistTracking);
+
             startTrackingVideo();
             getVideoProgress();
             hookKeyboard();
         });
     }
+}
+
+function onGetBlacklistKeyboard(data) {
+    var value = data[keyHook];
+    if (value === undefined) return;
+    useHook = value;
+}
+
+function onGetBlacklistTracking(data) {
+    var value = data[keyTrack];
+    if (value === undefined) return;
+    useTrack = value;
 }
 
 function startTrackingVideo() {
@@ -69,6 +111,10 @@ function stopTrackingVideo() {
 }
 
 function onTimeUpdate() {
+    if (!useTrack) {
+        return;
+    }
+
     var currentTime = this.currentTime;
     var duration = this.duration;
     var percentage = currentTime/duration;
@@ -168,6 +214,10 @@ function hookKeyboard() {
 }
 
 function onKeyDown(evt) {
+    if (!useHook) {
+        return;
+    }
+
     if (evt.defaultPrevented) {
         return;
     }
