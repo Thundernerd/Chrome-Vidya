@@ -2,6 +2,7 @@
 
 <head>
     <link rel="stylesheet" type="text/css" href="styles/popup.css">
+    <link rel="stylesheet" type="text/css" href="styles/options.css">
     <script src="scripts/jquery.min.js"></script>
     <script src="scripts/popup.js"></script>
 </head>
@@ -17,9 +18,24 @@
             <img id="keyboard_grey" title="Keyboard shortcuts are disabled" src="images/keyboard_grey.png"/>
             <img id="keyboard_black" class="black" title="Keyboard shortcuts are enabled" src="images/keyboard_black.png"/>
         </div>
+        <div id="gear">
+            <img id="gear_grey" title="Keyboard shortcuts are disabled" src="images/gear_grey.png"/>
+            <img id="gear_black" class="black" title="Keyboard shortcuts are enabled" src="images/gear_black.png"/>
+        </div>
     </div>
-    <div id="items">
-
+    <div id="content">
+        <div id="settings">
+            <span class="input_header">Time to start tracking (default 10)</span><br>
+            <input id="timeToStart" type="number" class="default_input"><br>
+            <span class="input_header">Scrub amount (default 10)</span><br>
+            <input id="scrubAmount" type="number" min="1" class="default_input"><br>
+            <span class="input_header">Finished percentage (default 85)</span><br>
+            <input id="finishPercentage" type="number" min="75" max="100" step="5" class="default_input"><br>
+            <span class="input_header">Open video in current tab (default false)</span><br>
+            <input id="openInCurrent" type="checkbox" class="default_input no_width"><br>
+            <br>
+        </div>
+        <div id="items"></div>
     </div>
 </body>
 

@@ -1,3 +1,4 @@
+var url;
 var domain;
 var useHook = false;
 var useTrack = true;
@@ -5,8 +6,13 @@ var useTrack = true;
 var keyKeyboard;
 var keyTracking;
 
+var key_settings = "vidya_settings";
+var settings;
+var settingsOpen = false;
+
 $(function() {
-    chrome.storage.local.get(null,onGetAllItems);
+    chrome.storage.local.get(key_settings, onGetSettings);
+    chrome.storage.local.get(null, onGetAllItems);
 
     $("#keyboard").click(function() {
         $("#keyboard_black").stop().fadeToggle(100);
@@ -14,6 +20,7 @@ $(function() {
         var data = {};
         data[keyKeyboard] = useHook;
         chrome.storage.local.set(data);
+        chrome.runtime.sendMessage({type:"popupUpdatedHook", url:url});
     });
 
     $("#tracking").click(function() {
@@ -22,6 +29,17 @@ $(function() {
         var data = {};
         data[keyTracking] = useTrack;
         chrome.storage.local.set(data);
+        chrome.runtime.sendMessage({type:"popupUpdatedTracking", url:url});
+    });
+
+    $("#gear").click(function() {
+        $("#gear_black").stop().fadeToggle(100);
+        $("#settings").slideToggle(200);
+        settingsOpen = !settingsOpen;
+        if (!settingsOpen) {
+            saveSettings();
+            chrome.runtime.sendMessage({type:"popupUpdatedSettings", url:url});
+        }
     });
 
     chrome.tabs.query({active:true,currentWindow:true}, function(data) {
@@ -30,7 +48,7 @@ $(function() {
             return;
         }
 
-        var url = data[0].url;
+        url = data[0].url;
         domain = extractDomain(url);
 
         if (domain.startsWith("www.")) {
@@ -44,6 +62,44 @@ $(function() {
         chrome.storage.local.get(keyTracking, onGetBlacklistTracking);
     });
 });
+
+function saveSettings() {
+    settings.timeToStart = parseInt($("#timeToStart").val());
+    settings.scrubAmount = parseInt($("#scrubAmount").val());
+    settings.finishPercentage = parseInt($("#finishPercentage").val());
+    settings.openInCurrent = $("#openInCurrent").is(":checked");
+
+    var data = {};
+    data[key_settings] = settings;
+    chrome.storage.local.set(data);
+}
+
+function setDefaultSettings() {
+    var data = {};
+    data[key_settings] = {
+        timeToStart: 10,
+        scrubAmount: 10,
+        finishPercentage: 85,
+        openInCurrent: false
+    };
+
+    chrome.storage.local.set(data);
+    chrome.storage.local.get(key_settings, onGetSettings);
+}
+
+function onGetSettings(data) {
+    var keys = Object.keys(data);
+    var values = Object.values(data);
+    if (values.length == 0) {
+        setDefaultSettings();
+    } else {
+        settings = values[0];
+        $("#timeToStart").val(settings.timeToStart);
+        $("#scrubAmount").val(settings.scrubAmount);
+        $("#finishPercentage").val(settings.finishPercentage);
+        $("#openInCurrent").prop("checked",settings.openInCurrent);
+    }
+}
 
 function onGetBlacklistKeyboard(data) {
     var value = data[keyKeyboard];
@@ -140,7 +196,19 @@ function createPopup(i, data) {
     }
 
     item.click(function() {
-        chrome.tabs.create({url:data.id});
+        if (settings.openInCurrent) {
+            var newUrl = data.id;
+            chrome.tabs.query({active:true,currentWindow:true}, function(tabs) {
+                if (tabs.length == 0) {
+                    chrome.tabs.create({url:data.id});
+                } else {
+                    chrome.tabs.update(tabs[0].id, {url:newUrl});
+                    window.close();
+                }
+            })
+        } else {
+            chrome.tabs.create({url:data.id});
+        }
         return false;
     });
 
@@ -171,8 +239,6 @@ function createPopup(i, data) {
     btn.contextmenu(function() {
         return false;
     });
-
-    console.log(data);
 
     $("#items").append(item);
 

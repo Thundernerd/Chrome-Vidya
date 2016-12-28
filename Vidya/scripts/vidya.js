@@ -1,15 +1,20 @@
 $(document).ready(function() {
     chrome.runtime.sendMessage({type:"isBlacklist"}, function(data) {
-        console.log(data);
-
         if (data.response == false) {
             findVideo();
         }
     });
+
+    loadSettings();
 });
+
+var port;
 
 var key_progress = "vidya_progress";
 var key_data = "vidya_data";
+var key_settings = "vidya_settings";
+
+var settings;
 
 var delays = [1000,1000,2000,2000,4000,4000,8000];
 var delayIndex = 0;
@@ -26,7 +31,59 @@ var keyTrack;
 var useHook = false;
 var useTrack = true;
 
+var isActive = false;
+
 var popupDataSet = false;
+
+function loadSettings() {
+    chrome.storage.local.get(key_settings, onGetSettings);
+}
+
+function onUpdateBlacklistTracking(data) {
+    var value = data[keyTrack];
+    if (value === undefined) return;
+
+    useTrack = value;
+    if (useTrack) {
+        startTrackingVideo();
+    } else {
+        stopTrackingVideo();
+    }
+}
+
+function updateTracking() {
+    chrome.storage.local.get(keyTrack, onGetBlacklistTracking);
+}
+
+function onUpdateBlacklistKeyboard(data) {
+    var value = data[keyHook];
+    if (value === undefined) return;
+
+    useHook = value;
+    if (useHook) {
+        hookKeyboard();
+    } else {
+        unhookKeyboard();
+    }
+}
+
+function updateHook() {
+    chrome.storage.local.get(keyHook, onUpdateBlacklistKeyboard);
+}
+
+function onGetSettings(data) {
+    var values = Object.values(data);
+    if (values.length == 0) {
+        settings = {
+            timeToStart: 10,
+            scrubAmount: 10,
+            finishPercentage: 85,
+            openInCurrent: false
+        };
+    } else {
+        settings = values[0];
+    }
+}
 
 function getKey(key) {
     return key+"_"+url;
@@ -45,6 +102,20 @@ function extractDomain(url) {
     return domain;
 }
 
+function onPortMessage(msg) {
+    if (!isActive) {
+        return;
+    }
+
+    if (msg.type == "updateSettings") {
+        loadSettings();
+    } else if (msg.type == "updateTracking") {
+        updateTracking();
+    } else if (msg.type == "updateHook") {
+        updateHook();
+    }
+}
+
 function findVideo() {
     var videos = $("video");
 
@@ -61,17 +132,14 @@ function findVideo() {
         video = videos[0];
 
         chrome.runtime.sendMessage({type:"getSearch"}, function(data) {
-            console.log(data);
             search = data.response;
         });
 
         chrome.runtime.sendMessage({type:"getTitle"}, function(data) {
-            console.log(data);
             title = data.response;
         });
 
         chrome.runtime.sendMessage({type:"getUrl"}, function (data) {
-            console.log(data);
             url = data.response;
 
             domain = extractDomain(url);
@@ -82,6 +150,11 @@ function findVideo() {
             keyTrack = "bl_t_"+domain;
             chrome.storage.local.get(keyHook, onGetBlacklistKeyboard);
             chrome.storage.local.get(keyTrack, onGetBlacklistTracking);
+
+            isActive = true;
+            port = chrome.runtime.connect({name: "vidya"});
+            port.postMessage({type:"register", url:url});
+            port.onMessage.addListener(onPortMessage);
 
             startTrackingVideo();
             getVideoProgress();
@@ -122,14 +195,16 @@ function onTimeUpdate() {
     if (isNaN(currentTime) || isNaN(duration))
         return;
 
-    if (currentTime < 10)
+    if (currentTime < settings.timeToStart)
         return;
 
     if (!popupDataSet) {
         setPopupData(this);
     }
 
-    if (percentage <= 0.85) {
+    var percentageLimit = settings.finishPercentage / 100;
+
+    if (percentage <= percentageLimit) {
         saveVideoData(currentTime);
     } else {
         stopTrackingVideo();
@@ -213,6 +288,10 @@ function hookKeyboard() {
     document.addEventListener("keydown", onKeyDown);
 }
 
+function unhookKeyboard() {
+    document.removeEventListener("keydown", onKeyDown);
+}
+
 function onKeyDown(evt) {
     if (!useHook) {
         return;
@@ -222,11 +301,13 @@ function onKeyDown(evt) {
         return;
     }
 
-    if ($(document.activeElement).is("input"))
+    if ($(document.activeElement).is("input")) {
         return;
+    }
 
-    if (evt.ctrlKey)
+    if (evt.ctrlKey) {
         return;
+    }
 
     switch (evt.keyCode) {
         case 48:
@@ -243,7 +324,7 @@ function onKeyDown(evt) {
             evt.preventDefault();
             break;
         case 74:
-            scrubStep(-10);
+            scrubStep(-settings.scrubAmount);
             evt.preventDefault();
             break;
         case 75:
@@ -251,7 +332,7 @@ function onKeyDown(evt) {
             evt.preventDefault();
             break;
         case 76:
-            scrubStep(10);
+            scrubStep(settings.scrubAmount);
             evt.preventDefault();
             break;
         case 77:
@@ -275,7 +356,8 @@ function scrubPercentage(p) {
 }
 
 function scrubStep(s) {
-    video.currentTime += s;
+    var seconds = parseInt(s);
+    video.currentTime += seconds;
 }
 
 function togglePause() {

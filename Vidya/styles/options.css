@@ -1,0 +1,27 @@
+#settings_tabs {
+    width: 100%;
+    height: 35px;
+    font-variant: small-caps;
+    font-size: 18px;
+}
+
+.tab {
+    display: inline-block;
+    width: 32%;
+    text-align: center;
+}
+
+.input_header {
+    font-variant: small-caps;
+    font-size: 18px;
+}
+
+.default_input {
+    height: 28px;
+    width: 100%;
+    padding-left: 5px;
+}
+
+.no_width {
+    width: 28px;
+}

@@ -36,6 +36,14 @@ body {
     height: 36px;
 }
 
+#gear {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+}
+
 #header img {
     position: absolute;
     top: 0;
@@ -48,7 +56,11 @@ body {
     display: none;
 }
 
-
+#content {
+    height: 100%;
+    overflow: hidden;
+    background-color: #EEE;
+}
 
 #items {
     height: 100%;
@@ -133,4 +145,12 @@ body {
     margin-top:-50px;
     margin-left:-50px;
     cursor: pointer;
+}
+
+#settings {
+    height: 100%;
+    overflow-x: hidden;
+    background-color: #EEE;
+    padding-right: 10px;
+    display: none;
 }
